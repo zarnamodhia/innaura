@@ -27,6 +27,16 @@ public final class PremiumUI {
     public static final Font BODY = new Font("Segoe UI", Font.PLAIN, 13);
     public static final Font LABEL = new Font("Segoe UI", Font.BOLD, 12);
     public static final Font DISPLAY = new Font("Georgia", Font.PLAIN, 25);
+    // Compatibility aliases for GuestPanel, ReservationPanel and BillingPanel.
+    // These keep the merged modules compatible with the current PremiumUI.
+    public static final Color COLOR_PRIMARY = FOREST;
+    public static final Color COLOR_NAVY = FOREST_DARK;
+    public static final Color COLOR_DANGER = RED_PALE;
+    public static final Color COLOR_BORDER = LINE;
+    public static final Color COLOR_CARD_BG = SURFACE;
+    public static final Font FONT_LABEL = LABEL;
+    public static final Font FONT_INPUT = BODY;
+    public static final Font FONT_SECTION = LABEL;
 
     public static JPanel card(LayoutManager layout) {
         JPanel p = new JPanel(layout);
@@ -53,6 +63,43 @@ public final class PremiumUI {
         return l;
     }
 
+    /** Compatibility header used by the merged management panels. */
+    public static JPanel createHeader(String titleText, String subtitleText) {
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setOpaque(false);
+        header.setBorder(new EmptyBorder(16, 20, 10, 20));
+
+        JLabel title = title(titleText);
+        title.setFont(DISPLAY);
+        JLabel subtitle = muted(subtitleText);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        header.add(title);
+        header.add(Box.createVerticalStrut(4));
+        header.add(subtitle);
+        return header;
+    }
+
+    /** Compatibility titled card border used by the merged management panels. */
+    public static Border createCardBorder(String titleText) {
+        return BorderFactory.createCompoundBorder(
+                new SoftLineBorder(LINE, 1, 16),
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createEmptyBorder(8, 8, 8, 8),
+                        titleText,
+                        TitledBorder.LEFT,
+                        TitledBorder.TOP,
+                        LABEL,
+                        MUTED));
+    }
+
+    /** Compatibility button factory used by the merged management panels. */
+    public static JButton createButton(String text, Color base, Color foreground) {
+        return button(text, base, foreground);
+    }
+
     public static void styleInput(JComponent c) {
         c.setFont(BODY);
         c.setForeground(INK);
@@ -76,6 +123,7 @@ public final class PremiumUI {
         b.setOpaque(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setBorder(new EmptyBorder(11, 16, 11, 16));
+        b.setPreferredSize(new Dimension(Math.max(110, b.getPreferredSize().width), 40));
         return b;
     }
 
@@ -134,7 +182,7 @@ public final class PremiumUI {
     public static JLabel fieldLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(LABEL);
-        l.setForeground(new Color(79, 91, 81));
+        l.setForeground(INK);
         return l;
     }
 

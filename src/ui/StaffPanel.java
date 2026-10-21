@@ -86,10 +86,11 @@ public class StaffPanel extends JPanel {
         split.setOpaque(false);
         split.setContinuousLayout(true);
         split.setOneTouchExpandable(true);
-        split.setResizeWeight(0.38);
+        split.setResizeWeight(0.50);
         split.setDividerSize(9);
-        split.setDividerLocation(0.38);
-        form.setMinimumSize(new Dimension(520, 205));
+        split.setDividerLocation(340);
+        form.setMinimumSize(new Dimension(520, 300));
+        form.setPreferredSize(new Dimension(900, 340));
         catalogue.setMinimumSize(new Dimension(520, 230));
         add(split, BorderLayout.CENTER);
     }

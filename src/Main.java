@@ -1,14 +1,5 @@
 import dao.ServiceDAO;
 import dao.StaffDAO;
-import model.Service;
-import model.Staff;
-import ui.ModulePanel;
-import ui.PremiumUI;
-import ui.ServicePanel;
-import ui.StaffPanel;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -16,6 +7,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import model.Service;
+import model.Staff;
+import ui.BillingPanel;
+import ui.GuestPanel;
+import ui.PremiumUI;
+import ui.ReservationPanel;
+import ui.ServicePanel;
+import ui.StaffPanel;
 
 /** InnAura desktop shell: database-backed Staff/Services plus first-module prototype screens. */
 public class Main {
@@ -26,12 +27,12 @@ public class Main {
     private static final Font UI_MEDIUM = PremiumUI.LABEL;
 
     private final String[] pageNames = {
-            "Overview", "Room Management", "Guest Management", "Reservations",
-            "Billing & Payments", "Employee Management", "Housekeeping", "Hotel Services"
+            "Overview", "Guest Management", "Reservations",
+            "Billing & Payments", "Employee Management", "Hotel Services"
     };
     private final String[] pageKeys = {
-            "dashboard", "rooms", "guests", "reservations",
-            "billing", "staff", "housekeeping", "services"
+            "dashboard", "guests", "reservations",
+            "billing", "staff", "services"
     };
     private final Map<String, JButton> navigationButtons = new LinkedHashMap<>();
     private final Map<String, String> keyToTitle = new LinkedHashMap<>();
@@ -46,6 +47,8 @@ public class Main {
     private JLabel activeStaffCount;
     private JLabel serviceCount;
     private JLabel availableServiceCount;
+    private GuestPanel guestPanel;
+    private ReservationPanel reservationPanel;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -208,22 +211,12 @@ public class Main {
         pages = new JPanel(pageLayout);
         pages.setBackground(PremiumUI.CANVAS);
         pages.add(createDashboard(), "dashboard");
-        pages.add(new ModulePanel("Room Management", "Manage room details, prices, capacity and status.",
-                new String[]{"Room No.", "Type", "Floor", "Capacity", "Price", "Status"},
-                new String[]{"Room No.", "Type", "Floor", "Capacity", "Price", "Status"}), "rooms");
-        pages.add(new ModulePanel("Guest Management", "Register and manage hotel guest details.",
-                new String[]{"Guest ID", "Full Name", "Phone", "Email", "Address"},
-                new String[]{"Guest ID", "Full Name", "Phone", "Email", "Address"}), "guests");
-        pages.add(new ModulePanel("Reservations", "Manage guest bookings and reservation dates.",
-                new String[]{"Booking ID", "Guest", "Room", "Check-in", "Check-out", "Status"},
-                new String[]{"Booking ID", "Guest", "Room", "Check-in", "Check-out", "Status"}), "reservations");
-        pages.add(new ModulePanel("Billing & Payments", "Track invoices, payments and outstanding balances.",
-                new String[]{"Invoice ID", "Guest", "Amount", "Paid", "Balance", "Status"},
-                new String[]{"Invoice ID", "Guest", "Amount", "Paid", "Balance", "Status"}), "billing");
+        guestPanel = new GuestPanel();
+        reservationPanel = new ReservationPanel();
+        pages.add(guestPanel, "guests");
+        pages.add(reservationPanel, "reservations");
+        pages.add(new BillingPanel(), "billing");
         pages.add(new StaffPanel(), "staff");
-        pages.add(new ModulePanel("Housekeeping", "Assign and track room cleaning and maintenance tasks.",
-                new String[]{"Task ID", "Room", "Assigned Staff", "Task", "Status"},
-                new String[]{"Task ID", "Room", "Assigned Staff", "Task", "Status"}), "housekeeping");
         pages.add(new ServicePanel(), "services");
         workspace.add(pages, BorderLayout.CENTER);
         return workspace;
@@ -273,8 +266,8 @@ public class Main {
         JLabel quickTitle = PremiumUI.title("Quick access"); quickTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         content.add(quickTitle); content.add(Box.createVerticalStrut(12));
         JPanel quick = new JPanel(new GridLayout(2, 2, 12, 12)); quick.setOpaque(false);
-        quick.add(shortcutCard("01", "Room management", "Rooms, rates and occupancy records.", "Open rooms →", () -> showPage("rooms")));
-        quick.add(shortcutCard("02", "Guest management", "Guest details and contact information.", "Open guests →", () -> showPage("guests")));
+        quick.add(shortcutCard("01", "Guest management", "Guest details and contact information.", "Open guests →", () -> showPage("guests")));
+        quick.add(shortcutCard("02", "Reservations", "Bookings, check-ins and reservation schedules.", "Open reservations →", () -> showPage("reservations")));
         quick.add(shortcutCard("03", "Staff management", "Employee details, roles and status.", "Open staff →", () -> showPage("staff")));
         quick.add(shortcutCard("04", "Hotel services", "Offerings, categories and pricing.", "Manage services →", () -> showPage("services")));
         quick.setMaximumSize(new Dimension(Integer.MAX_VALUE, 230));
@@ -318,6 +311,9 @@ public class Main {
     }
 
     private void showPage(String key) {
+        if ("reservations".equals(key) && reservationPanel != null) {
+            reservationPanel.reloadGuestsList();
+        }
         pageLayout.show(pages, key);
         for (Map.Entry<String, JButton> entry : navigationButtons.entrySet()) {
             boolean active = entry.getKey().equals(key);
@@ -329,11 +325,9 @@ public class Main {
             case "dashboard": pageSubtitle.setText("A clear view of your hotel's day-to-day operations."); break;
             case "staff": pageSubtitle.setText("Manage your team, roles and employee records."); break;
             case "services": pageSubtitle.setText("Curate hotel offerings, pricing and availability."); break;
-            case "rooms": pageSubtitle.setText("Manage room details, prices, capacity and status. Prototype records are temporary."); break;
             case "guests": pageSubtitle.setText("Register and manage hotel guests. Prototype records are temporary."); break;
             case "reservations": pageSubtitle.setText("Manage bookings and reservation dates. Prototype records are temporary."); break;
-            case "billing": pageSubtitle.setText("Track invoices and payments. Prototype records are temporary."); break;
-            case "housekeeping": pageSubtitle.setText("Track cleaning tasks and assignments. Prototype records are temporary."); break;
+            case "billing": pageSubtitle.setText("Track invoices, payments and guest checkout."); break;
             default: pageSubtitle.setText("Manage hotel operations in InnAura.");
         }
         if ("dashboard".equals(key)) refreshDashboard();
