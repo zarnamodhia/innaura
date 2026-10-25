@@ -159,7 +159,13 @@ public class GuestPanel extends JPanel {
             throw new IllegalArgumentException("Phone number is required.");
         }
         return new Guest(name, email, phone, idProof, address);
-    }
+    } 
+     if (!phone.matches("[+0-9() .\\-]{7,20}")) {
+            throw new IllegalArgumentException("Enter a valid phone number (e.g. +91 9876543210).");
+        }
+        if (!email.isEmpty() && !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new IllegalArgumentException("Enter a valid email address (e.g. guest@example.com).");
+        }
 
     private void addGuest() {
         try {
